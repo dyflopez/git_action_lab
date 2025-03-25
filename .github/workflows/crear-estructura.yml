@@ -7,11 +7,11 @@ on:
         description: 'Nombre del repositorio (ejemplo: user/repo-name)'
         required: true
       structure:
-        description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend)'
+        description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend,infra)'
         required: true
 
 permissions:
-  contents: write  # 🔹 Permite que el workflow haga cambios en el código
+  contents: write
 
 jobs:
   create-structure:
@@ -20,8 +20,8 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository_owner }}/${{ github.event.inputs.repo }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.event.inputs.repo }}
+          token: ${{ secrets.PAT_GITHUB }}  # ✅ Usa el PAT en lugar de GITHUB_TOKEN
 
       - name: Configurar usuario de Git
         run: |
@@ -38,7 +38,6 @@ jobs:
           touch README.md
           echo "# Proyecto" > README.md
 
-      - name: Subir cambios a GitHub
-        run: |
           git add .
-          git diff --staged --quiet || (git commit -m "🚀 Estructura inicial creada automáticamente" && git push origin main)
+          git commit -m "🚀 Estructura inicial creada automáticamente"
+          git push origin main  # ✅ Ahora con el PAT debería funcionar
