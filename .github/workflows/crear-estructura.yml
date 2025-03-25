@@ -3,29 +3,34 @@ name: Crear estructura en el repositorio
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: 'Nombre del repositorio (ejemplo: user/repo-name)'
+        required: true
       structure:
         description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend)'
         required: true
 
 permissions:
-  contents: write  # 🔹 Permite escritura en el repositorio
+  contents: write  # 🔹 Da permisos de escritura al workflow
 
 jobs:
   create-structure:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT_GITHUB }}  # 🔹 Usa el PAT en lugar del GITHUB_TOKEN
+      - name: Clonar el repositorio destino
+        run: |
+          git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo }}.git repo_destino
+          cd repo_destino
 
       - name: Configurar usuario de Git
         run: |
+          cd repo_destino
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Crear estructura de carpetas
         run: |
+          cd repo_destino
           IFS=',' read -ra FOLDERS <<< "${{ github.event.inputs.structure }}"
           for folder in "${FOLDERS[@]}"; do
             mkdir -p "$folder"
@@ -34,10 +39,8 @@ jobs:
           touch README.md
           echo "# Proyecto" > README.md
 
-      - name: Configurar la URL remota con PAT
-        run: git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git
-
       - name: Commit y Push de los cambios
         run: |
+          cd repo_destino
           git add .
           git diff --staged --quiet || (git commit -m "🚀 Estructura inicial creada automáticamente" && git push origin main)
