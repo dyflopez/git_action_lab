@@ -3,9 +3,6 @@ name: Crear estructura en el repositorio
 on:
   workflow_dispatch:
     inputs:
-      repo:
-        description: 'Nombre del repositorio (ejemplo: user/repo-name)'
-        required: true
       structure:
         description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend)'
         required: true
@@ -20,7 +17,6 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.inputs.repo }}
           token: ${{ secrets.PAT_GITHUB }}  # 🔹 Usa el PAT en lugar del GITHUB_TOKEN
 
       - name: Configurar usuario de Git
@@ -39,7 +35,7 @@ jobs:
           echo "# Proyecto" > README.md
 
       - name: Configurar la URL remota con PAT
-        run: git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo }}.git
+        run: git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git
 
       - name: Commit y Push de los cambios
         run: |
