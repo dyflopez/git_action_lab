@@ -23,7 +23,6 @@ jobs:
           echo "🛠 Configurando autenticación en Git..."
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global credential.helper store
 
       - name: Clonar el repositorio destino con autenticación
         run: |
@@ -38,6 +37,14 @@ jobs:
           IFS=',' read -ra FOLDERS <<< "${{ github.event.inputs.structure }}"
           for folder in "${FOLDERS[@]}"; do
             mkdir -p "$folder"
+
+            # Agregar un .gitkeep en todas las carpetas para que Git las rastree
+            touch "$folder/.gitkeep"
+
+            # Si la carpeta es "backend" o "api", agregar un test.txt
+            if [[ "$folder" == "backend" || "$folder" == "api" ]]; then
+              echo "Archivo de prueba en $folder" > "$folder/test.txt"
+            fi
           done
 
           # Agregar un README
