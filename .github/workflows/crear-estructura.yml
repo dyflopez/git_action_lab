@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar el repositorio destino
+      - name: Clonar el repositorio destino con autenticación
         run: |
-          git clone https://${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo_destino }}.git repo_destino
+          git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo_destino }}.git repo_destino
           cd repo_destino
 
       - name: Configurar usuario de Git
