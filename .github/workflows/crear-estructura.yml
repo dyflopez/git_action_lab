@@ -1,25 +1,26 @@
-name: Crear estructura en el repositorio
+name: Crear estructura en otro repositorio
 
 on:
   workflow_dispatch:
     inputs:
-      repo:
-        description: 'Nombre del repositorio (ejemplo: user/repo-name)'
+      repo_destino:
+        description: 'Nombre del repositorio destino (ejemplo: user/repo-name)'
         required: true
       structure:
         description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend)'
         required: true
 
 permissions:
-  contents: write  # 🔹 Da permisos de escritura al workflow
+  contents: write  # 🔹 Permiso para escribir en el repo
 
 jobs:
   create-structure:
     runs-on: ubuntu-latest
+
     steps:
       - name: Clonar el repositorio destino
         run: |
-          git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo }}.git repo_destino
+          git clone https://${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo_destino }}.git repo_destino
           cd repo_destino
 
       - name: Configurar usuario de Git
@@ -36,8 +37,8 @@ jobs:
             mkdir -p "$folder"
           done
 
-          touch README.md
-          echo "# Proyecto" > README.md
+          # Agregar un README
+          echo "# Estructura creada automáticamente 🚀" > README.md
 
       - name: Commit y Push de los cambios
         run: |
