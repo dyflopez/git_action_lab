@@ -7,11 +7,11 @@ on:
         description: 'Nombre del repositorio (ejemplo: user/repo-name)'
         required: true
       structure:
-        description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend,infra)'
+        description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend)'
         required: true
 
 permissions:
-  contents: write
+  contents: write  # 🔹 Permite escritura en el repositorio
 
 jobs:
   create-structure:
@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ github.event.inputs.repo }}
-          token: ${{ secrets.PAT_GITHUB }}  # ✅ Usa el PAT en lugar de GITHUB_TOKEN
+          token: ${{ secrets.PAT_GITHUB }}  # 🔹 Usa el PAT en lugar del GITHUB_TOKEN
 
       - name: Configurar usuario de Git
         run: |
@@ -38,6 +38,10 @@ jobs:
           touch README.md
           echo "# Proyecto" > README.md
 
+      - name: Configurar la URL remota con PAT
+        run: git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo }}.git
+
+      - name: Commit y Push de los cambios
+        run: |
           git add .
-          git commit -m "🚀 Estructura inicial creada automáticamente"
-          git push origin main  # ✅ Ahora con el PAT debería funcionar
+          git diff --staged --quiet || (git commit -m "🚀 Estructura inicial creada automáticamente" && git push origin main)
