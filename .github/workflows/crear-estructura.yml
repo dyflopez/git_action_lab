@@ -1,42 +1,43 @@
-name: Crear estructura de proyecto
+name: Crear estructura en el repositorio
 
 on:
   workflow_dispatch:
     inputs:
-      structure:
-        description: 'Estructura de carpetas (separadas por comas)'
-        required: true
-        default: 'api,api/controllers,api/services,frontend,backend,infra'
       repo:
-        description: 'Nombre del repositorio donde se creará la estructura'
+        description: 'Nombre del repositorio (ejemplo: user/repo-name)'
         required: true
+      structure:
+        description: 'Estructura de carpetas a crear (ejemplo: api,backend,frontend)'
+        required: true
+
+permissions:
+  contents: write  # 🔹 Da permisos de escritura al workflow
 
 jobs:
   create-structure:
     runs-on: ubuntu-latest
     steps:
-      - name: Clonar el repositorio destino
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository_owner }}/${{ github.event.inputs.repo }}
+          repository: ${{ github.event.inputs.repo }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Crear la estructura de carpetas y archivos
-        run: |
-          IFS=',' read -r -a FOLDERS <<< "${{ github.event.inputs.structure }}"
-          for folder in "${FOLDERS[@]}"; do
-            mkdir -p "$folder"
-            touch "$folder/.gitkeep"
-          done
-          
-          # Crear un archivo dentro de 'infra'
-          echo "Este es un archivo de configuración inicial" > infra/config.txt
-          echo "# Documentación del proyecto" > README.md
-
-      - name: Confirmar cambios y hacer push
+      - name: Configurar usuario de Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Crear estructura de carpetas
+        run: |
+          IFS=',' read -ra FOLDERS <<< "${{ github.event.inputs.structure }}"
+          for folder in "${FOLDERS[@]}"; do
+            mkdir -p "$folder"
+          done
+
+          touch README.md
+          echo "# Proyecto" > README.md
+
           git add .
-          git commit -m "Estructura inicial creada automáticamente"
-          git push
+          git commit -m "🚀 Estructura inicial creada automáticamente"
+          git push origin main
