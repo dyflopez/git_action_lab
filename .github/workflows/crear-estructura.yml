@@ -18,19 +18,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Configurar autenticación
+        run: |
+          echo "🛠 Configurando autenticación en Git..."
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global credential.helper store
+
       - name: Clonar el repositorio destino con autenticación
         run: |
+          echo "🔄 Clonando el repositorio destino..."
           git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo_destino }}.git repo_destino
           cd repo_destino
 
-      - name: Configurar usuario de Git
-        run: |
-          cd repo_destino
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Crear estructura de carpetas
         run: |
+          echo "📂 Creando estructura de carpetas..."
           cd repo_destino
           IFS=',' read -ra FOLDERS <<< "${{ github.event.inputs.structure }}"
           for folder in "${FOLDERS[@]}"; do
@@ -40,8 +43,19 @@ jobs:
           # Agregar un README
           echo "# Estructura creada automáticamente 🚀" > README.md
 
-      - name: Commit y Push de los cambios
+      - name: Verificar cambios y hacer commit
         run: |
+          echo "📌 Preparando cambios..."
           cd repo_destino
           git add .
-          git diff --staged --quiet || (git commit -m "🚀 Estructura inicial creada automáticamente" && git push origin main)
+          git diff --staged --quiet || git commit -m "🚀 Estructura inicial creada automáticamente"
+
+      - name: Push de los cambios con autenticación
+        env:
+          GIT_TRACE: 1
+          GIT_CURL_VERBOSE: 1
+        run: |
+          echo "🚀 Pushing cambios al repositorio..."
+          cd repo_destino
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.event.inputs.repo_destino }}.git
+          git push origin main
